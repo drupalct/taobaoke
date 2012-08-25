@@ -6,20 +6,7 @@
 
 
 /**
- * Implements hook_init().
- * Load taobaoke css.
- */
-function taobaoke_init() {
-  // Load stylesheet.
-  if (arg(0) == 'shop') {
-    $taobaoke_module_path = drupal_get_path('module', 'taobaoke');
-    drupal_add_css($taobaoke_module_path . "/css/taobaoke.css");
-  }
-}
-
-
-/**
- * Implement hook_libraries_info().
+ * Implements hook_libraries_info().
  */
 function taobaoke_libraries_info() {
   $libraries = array();
@@ -36,7 +23,6 @@ function taobaoke_libraries_info() {
   
   return $libraries;
 }
-
 
 
 /**
@@ -183,10 +169,9 @@ function taobaoke_block_info() {
 
   for ($delta = 0; $delta < $block_count; $delta++) {
 
+    $index = $delta + 1;
     $blocks[$delta] = array(
-      'info' => variable_get('taobaoke_block_title_' . $delta,
-        t('#!index', array('!index' => $delta + 1))) .
-        t('(Taobaoke)'),
+      'info' => variable_get('taobaoke_block_title_' . $delta, t('Taobaoke Block #!index', array('!index' => $index))),
       'status' => 0,
       'cache' => DRUPAL_CACHE_PER_ROLE,
     );
@@ -215,11 +200,9 @@ function taobaoke_block_configure($delta = '') {
   module_load_include('inc', 'taobaoke', 'taobaoke.admin');
   $form = _taobaoke_settings_form($settings);
 
-  // Unset form elements for global settings.
-  unset($form['api']);
-
-  unset($form['submit']);
-
+  // Hide form elements for global settings.
+  hide($form['api']);
+  hide($form['submit']);
 
   return $form;
 }
@@ -298,6 +281,9 @@ function taobaoke_settings_get($setting_index = NULL) {
  */
 function taobaoke_items_page() {
 
+  // Load CSS.
+  taobaoke_add_css();
+
   $output = "";
 
   // @todo Add list style for taobaoke items.
@@ -365,9 +351,7 @@ function taobaoke_pager() {
  */
 function taobaoke_item_redirect_page($taobaoke_item) {
 
-  $redirect = isset($taobaoke_item['click_url']) && !empty($taobaoke_item['click_url'])
-    ? $taobaoke_item['click_url']
-    : $taobaoke_item['detail_url'];
+  $redirect = isset($taobaoke_item['click_url']) && !empty($taobaoke_item['click_url']) ? $taobaoke_item['click_url'] : $taobaoke_item['detail_url'];
 
   drupal_add_http_header("location", $redirect);
 }
@@ -378,9 +362,7 @@ function taobaoke_item_redirect_page($taobaoke_item) {
  */
 function taobaoke_shop_redirect_page($taobaoke_item) {
 
-  $redirect = isset($taobaoke_item['shop_click_url']) && !empty($taobaoke_item['shop_click_url'])
-    ? $taobaoke_item['shop_click_url']
-    : $taobaoke_item['detail_url'];
+  $redirect = isset($taobaoke_item['shop_click_url']) && !empty($taobaoke_item['shop_click_url']) ? $taobaoke_item['shop_click_url'] : $taobaoke_item['detail_url'];
 
   drupal_set_header("location:" . $redirect);
 }
@@ -435,7 +417,7 @@ function taobaoke_block_items_get($settings) {
  */
 function taobaoke_items_get($settings) {
 
-  $taobaoke_items =_taobaoke_items_get($settings);
+  $taobaoke_items = _taobaoke_items_get($settings);
 
   return $taobaoke_items;
 }
@@ -562,8 +544,8 @@ function _taobaoke_items_get($settings) {
 
   $item_attributes = array(
     "num_iid", "title", "nick", "pic_url", "price", "click_url", "commission", "commission_rate",
-     "commission_num", "commission_volume", "shop_click_url", "seller_credit_score", "item_location",
-     "volume",
+    "commission_num", "commission_volume", "shop_click_url", "seller_credit_score", "item_location",
+    "volume",
   );
 
 
@@ -634,6 +616,14 @@ function taobaoke_settings_index() {
     'is_mobile',
   );
 
+}
+
+/**
+ * Load CSS
+ */
+function taobaoke_add_css() {
+  $taobaoke_module_path = drupal_get_path('module', 'taobaoke');
+  drupal_add_css($taobaoke_module_path . "/css/taobaoke.css");
 }
 
 

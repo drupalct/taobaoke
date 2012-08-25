@@ -1,9 +1,15 @@
-INSTALL
+# REQUIREMENTS #
+
+This module need curl() support, 
+please make sure the php_curl extension is enabled.
+
+
+# INSTALL #
 
 1. Download taobaoke module
 2. Extract taobaoke module to sites/all/modules
-3. Download Taobao SDK from 
-http://open.taobao.com/dev/index.php/SDK%E4%B8%8B%E8%BD%BD
-4. Extract Taobao SDK to sites/all/libraries, 
-make sure sites/all/libraries/topsdk/TopSdk.php exists.
+3. Register at http://open.taobao.com and download Taobao SDK, or download 
+Taobao SDK from http://lugir.com/sites/default/files/taobao-sdk-php-taobaoke.zip
+4. Extract Taobao SDK to sites/all/libraries, and make sure 
+sites/all/libraries/topsdk/TopSdk.php exists.
 5. Go to module administer page, enable taobaoke module.

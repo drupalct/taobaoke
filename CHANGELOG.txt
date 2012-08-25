@@ -10,5 +10,3 @@ by Lugir: Fixed can't add links to images which in teaser mode or RSS.
 Taobaoke 6.x-1.x, 2011-05-23
 ------------------------------
 by Lugir: Add TOP SDK(taobao-sdk-php-20110518.zip) into module package.
-
-

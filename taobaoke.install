@@ -66,43 +66,58 @@ function taobaoke_requirements($phase) {
 
   if ($phase == 'install') {
 
-    // TopSDK path.
-    $top_sdk_file = './sites/all/libraries/topsdk/TopSdk.php';
-
-    // Check TopSDK status.
-    $file_exists = @file_exists($top_sdk_file);
-
-    // Module will not be installed until pass this requirement check.
-    if (!$file_exists) {
-      $requirements = taobaoke_requirements_error();
+    // Module will not be installed if php curl extension is not enabled.
+    if (!extension_loaded('curl')) {
+      $requirements['curl'] = taobaoke_requirements_error('curl');
     }
 
+  }
+  
+  if ($phase == 'runtime') {
+  
+    // Display a error message in status report page.
+    $library = libraries_detect('topsdk');
+    
+    if (!$library['installed']) {
+      $requirements['topsdk'] = taobaoke_requirements_error('topsdk');
+    }
+    
   }
 
   return $requirements;
 }
 
+
 /**
  * Set requirments error message.
  */
-function taobaoke_requirements_error() {
+function taobaoke_requirements_error($type) {
   $requirements = array();
 
-  // Set error message.
-  $missing_top_sdk = t('Taobaoke module is not enable. <br />
-    The TopSDK is missing. Download it from http://open.taobao.com
-    and extract it into the sites/all/libraries/topsdk directory
-    before you using Taobaoke module.
-    More information about install taobaoke module please read
-    the README.txt file in taobaoke module folder.');
+  if ($type == 'curl') {
+    // Set error message.
+    $message = t('Taobaoke module needs PHP cURL extension loaded, please make sure that then try to enable taobaoke module again.');
 
-  $message = $missing_top_sdk;
+    // Set requirements message.
+    $requirements['curl'] = array(
+      'title' => t('cURL'),
+      'description' => $message,
+      'severity' => REQUIREMENT_ERROR,
+    );
+  }
 
-  // Set requirements message.
-  $requirements['topsdk'] = array(
-    'title' => t('TopSDK'),
-    'description' => $message,
-    'severity' => REQUIREMENT_ERROR,
-  );
-  return $requirements;
+  if ($type == 'topsdk') {
+    // Set error message.
+    $message = t('The TopSDK library missing. Taobaoke module is not enabled. Download it from http://open.taobao.com and extract it into the sites/all/libraries/topsdk directory before you using Taobaoke module. More information about install taobaoke module please see README.txt file in taobaoke module directory.');
+
+    // Set requirements message.
+    $requirements['topsdk'] = array(
+      'title' => t('TopSDK'),
+      'value' => t('Not Found'),
+      'description' => $message,
+      'severity' => REQUIREMENT_ERROR,
+    );
+  }
+
+  return $requirements[$type];
 }

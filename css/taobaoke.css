@@ -1,143 +1,140 @@
 /* Taobaoke List Page */
 .taobaoke_item_box {
-  position: relative;
+  border-top: 1px solid #e5e5e5;
   display: inline-block;
-  width: 216px; /* taobao 232*/
-  overflow: hidden;
+  float: left;
   height: auto;
   margin: -1px -4px 0 0;
+  overflow: hidden;
   padding: 20px 9px;
+  position: relative;
   vertical-align: top;
-  border-top: 1px solid #E5E5E5;
+  width: 216px;
+}
+
+.taobaoke_item .pic {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  height: 204px;
+  overflow: hidden;
+  padding: 6px;
+  width: 204px;
+}
+
+.taobaoke_item .pic a {
+  display: block;
+  height: 204px;
+  overflow: hidden;
+  width: 204px;
+}
+
+.taobaoke_item .pic img {
+  width: 204px;
+}
+  
+.taobaoke_item h3.title { 
+  font-family: "宋体";
+  font-weight: normal;
+  font-size: 12px;
+  height: 34px;
+  line-height: 1.5;
+  overflow: hidden;
+  /*padding: 240px 0 5px;*/
+  padding: 5px 0px;
+  width: 230px;
+}
+
+.taobaoke_item h3.title span.H {
+  color: #dd4b39;
+}
+ 
+.taobaoke_item .attribute .price .symbol {
+  color: #999;
   float: left;
+  font-size: 12px;
+  font-weight: normal;
+  vertical-align: baseline;
 }
-
-.taobaoke_item  {
-
+  
+.taobaoke_item .attribute .price .money {
+  background-position: -33px 6px;
+  color: #f30;
+  float: left;
+  font-size: 16px;
+  font-weight: bold;
 }
-
-  .taobaoke_item .pic {
-    height: 204px;
-    width: 204px;
-    padding: 6px;
-    border: 1px solid #ddd;
-    background-color: #fff;
-    overflow: hidden;
-  }
-    .taobaoke_item .pic a{
-      height: 204px;
-      width: 204px;
-      display: block;
-      overflow: hidden;
-    }
-    .taobaoke_item .pic img {
-      width: 204px;
-    }
-  
-  .taobaoke_item h3.title {
-    width: 230px;
-    height: 34px;
-    font-size: 12px;
-    overflow: hidden;
-    /*padding: 240px 0 5px;*/
-    padding: 5px 0px;
-    line-height: 1.5;
-    font-weight: normal;
-    font-family: "宋体";
-  }
-    .taobaoke_item h3.title span.H {
-      color: #DD4B39;
-    }
-   
-  .taobaoke_item .attribute .price .symbol {
-    vertical-align: baseline;
-    float: left;
-    color: #999;
-    font-size: 12px;
-    font-weight: normal;
-  }
-  
-  .taobaoke_item .attribute .price .money {
-    font-weight: bold;
-    font-size: 16px;
-    color: #f30;
-    background-position: -33px 6px;
-    float: left;
-  }
     
   
-  .taobaoke_item .attribute .place {
-    display: inline;
-    float: right;
-    text-align: right;
-    overflow: hidden;
-    font-size: 12px;
-  }
+.taobaoke_item .attribute .place {
+  display: inline;
+  float: right;
+  font-size: 12px;
+  overflow: hidden;
+  text-align: right;
+}
   
 /* Taobaoke Block Items */
 .block-taobaoke .taobaoke_item_box {
-  position: relative;
+  border-top: 1px solid #e5e5e5;
   display: inline-block;
-  width: 180px; /* taobao 232*/
-  overflow: hidden;
+  float: left;
   height: auto;
   margin: -1px -4px 0 0;
+  overflow: hidden;
   padding: 10px 9px;
+  position: relative;
   vertical-align: top;
-  border-top: 1px solid #E5E5E5;
+  width: 180px;
+}
+
+.block-taobaoke .taobaoke_item .pic {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  height: 170px;
+  overflow: hidden;
+  padding: 4px;
+  width: 170px;
+}
+
+.block-taobaoke .taobaoke_item .pic a {
+  display: block;
+  height: 170px;
+  overflow: hidden;
+  width: 170px;
+}
+
+.block-taobaoke .taobaoke_item .pic img {
+  width: 170px;
+}
+  
+.block-taobaoke .taobaoke_item h3.title {
+  
+  
+  font-family: "宋体";
+  font-size: 12px;
+  font-weight: normal;
+  height: 34px;
+  line-height: 1.5;
+  overflow: hidden;
+  /*padding: 240px 0 5px;*/
+  padding: 5px 0px;
+  width: 170px;
+}
+  
+.block-taobaoke .taobaoke_item .attribute .price {
+  background-position: -33px 6px;
+  color: #F30;
   float: left;
+  font-weight: bold;
+  font-size: 16px;
+  padding-left: 10px;
 }
-
-.block-taobaoke .taobaoke_item  {
-
+  
+.block-taobaoke .taobaoke_item .attribute .place {
+  display: inline;
+  float: right;
+  font-size: 12px;
+  overflow: hidden;
+  text-align: right;
+  width: 60px;
 }
-
-  .block-taobaoke .taobaoke_item .pic {
-    height: 170px;
-    width: 170px;
-    padding: 4px;
-    border: 1px solid #ddd;
-    background-color: #fff;
-    overflow: hidden;
-  }
-    .block-taobaoke .taobaoke_item .pic a{
-      height: 170px;
-      width: 170px;
-      display: block;
-      overflow: hidden;
-    }
-    .block-taobaoke .taobaoke_item .pic img {
-      width: 170px;
-    }
-  
-  .block-taobaoke .taobaoke_item h3.title {
-    width: 170px;
-    height: 34px;
-    line-height: 1.5;
-    font-size: 12px;
-    overflow: hidden;
-    /*padding: 240px 0 5px;*/
-    padding: 5px 0px;
-    font-weight: normal;
-    font-family: "宋体";
-  }
-  
-  .block-taobaoke .taobaoke_item .attribute .price {
-    padding-left: 10px;
-    font-weight: bold;
-    font-size: 16px;
-    color: #F30;
-    background-position: -33px 6px;
-    float: left;
-  }
-  
-  .block-taobaoke .taobaoke_item .attribute .place {
-    display: inline;
-    float: right;
-    width: 60px;
-    text-align: right;
-    overflow: hidden;
-    font-size: 12px;
-  }
-
-

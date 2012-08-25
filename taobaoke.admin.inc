@@ -1,6 +1,7 @@
 <?php
 /**
  * @file
+ * Admin file of Taobaoke module.
  */
 
 // Max number of taobaoke blocks.
@@ -32,8 +33,7 @@ function taobaoke_settings_form($form, &$form_state, $settings) {
 
 
 /**
- * Taobaoke settings form.
- * This form is used for global settings page and block settings page.
+ * Taobaoke settings form, this form is used for global settings page and block settings page.
  */
 function _taobaoke_settings_form($settings) {
   $form['api'] = array(
@@ -389,7 +389,6 @@ function taobaoke_block_admin_form_submit($form, &$form_state) {
   }
   else {
     drupal_set_message(t('The value of block count must between 1 and %max_count',
-
       array('%max_count' => TAOBAOKE_MAX_BLOCK_COUNT)));
 
     $block_count = variable_get('taobaoke_block_count', 1);
