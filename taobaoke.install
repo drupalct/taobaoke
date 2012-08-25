@@ -1,0 +1,108 @@
+<?php
+
+/**
+ * @file
+ * Install, update, and uninstall functions for the Taobaoke module.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function taobaoke_install() {
+  // 'page_no' start form 0, to keep same with theme_pager.
+  $default_settings = array(
+    'nick' => '',
+    'pid' => '',
+    'keyword' => '',
+    'cid' => 162404,
+    'start_price' => 0,
+    'end_price' => 999999,
+    'auto_send' => '',
+    'area' => '',
+    'start_credit' => '2diamond',
+    'end_credit' => '5goldencrown',
+    'sort' => 'commissionRate_desc',
+    'guarantee' => '',
+    'start_commissionRate' => 1000,
+    'end_commissionRate' => 5000,
+    'start_commissionNum' => '',
+    'end_commissionNum' => '',
+    'start_totalnum' => '',
+    'end_totalnum' => '',
+    'cash_coupon' => '',
+    'vip_cart' => '',
+    'overseas_item' => '',
+    'sevendays_return' => '',
+    'real_describe' => '',
+    'onemonth_repair' => '',
+    'cash_ondelivery' => '',
+    'mail_item' => '',
+    'page_no' => 0,
+    'page_size' => 36,
+    'outer_code' => 'drupal',
+    'is_mobile' => '',
+  );
+
+  foreach ($default_settings as $key => $value) {
+    variable_set('taobaoke_' . $key, $value);
+  }
+  variable_set('taobaoke_block_count', 1);
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function taobaoke_uninstall() {
+  $query = "DELETE FROM {variable} WHERE name LIKE 'taobaoke_%'";
+  db_query($query);
+}
+
+/**
+ * Implements hook_requirements().
+ */
+function taobaoke_requirements($phase) {
+
+  $requirements = array();
+
+  if ($phase == 'install') {
+
+    // TopSDK path.
+    $top_sdk_file = './sites/all/libraries/topsdk/TopSdk.php';
+
+    // Check TopSDK status.
+    $file_exists = @file_exists($top_sdk_file);
+
+    // Module will not be installed until pass this requirement check.
+    if (!$file_exists) {
+      $requirements = taobaoke_requirements_error();
+    }
+
+  }
+
+  return $requirements;
+}
+
+/**
+ * Set requirments error message.
+ */
+function taobaoke_requirements_error() {
+  $requirements = array();
+
+  // Set error message.
+  $missing_top_sdk = t('Taobaoke module is not enable. <br />
+    The TopSDK is missing. Download it from http://open.taobao.com
+    and extract it into the sites/all/libraries/topsdk directory
+    before you using Taobaoke module.
+    More information about install taobaoke module please read
+    the README.txt file in taobaoke module folder.');
+
+  $message = $missing_top_sdk;
+
+  // Set requirements message.
+  $requirements['topsdk'] = array(
+    'title' => t('TopSDK'),
+    'description' => $message,
+    'severity' => REQUIREMENT_ERROR,
+  );
+  return $requirements;
+}

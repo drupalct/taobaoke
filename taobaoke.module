@@ -1,0 +1,667 @@
+<?php
+/**
+ * @file
+ * Main file of Taobaoke module
+ */
+
+
+/**
+ * Implements hook_init().
+ * Load taobaoke css.
+ */
+function taobaoke_init() {
+  // Load stylesheet.
+  if (arg(0) == 'shop') {
+    $taobaoke_module_path = drupal_get_path('module', 'taobaoke');
+    drupal_add_css($taobaoke_module_path . "/css/taobaoke.css");
+  }
+}
+
+
+/**
+ * Implement hook_libraries_info().
+ */
+function taobaoke_libraries_info() {
+  $libraries = array();
+  
+  $libraries['topsdk'] = array(
+    'name' => 'Top SDK',
+    'vendor url' => 'http://open.taobao.com',
+    'download url' => 'http://open.taobao.com/doc/detail.htm?id=34',
+    'version' => 'undefined',
+    'files' => array(
+      'php' => array('TopSdk.php'),
+    ),
+  );
+  
+  return $libraries;
+}
+
+
+
+/**
+ * Include topsdk.
+ */
+function taobaoke_load_sdk() {
+
+  $name = 'topsdk';
+  $library = libraries_load($name);
+
+  if (!$library['loaded']) {
+  
+    // This contains a short status code of what went wrong, such as 'not found'.
+    // $error = $library['error'];
+    
+    // This contains a detailed (localized) error message.
+    $error_message = filter_xss($library['error message']);
+    
+    // Display error message and error code.
+    drupal_set_message($error_message, 'error');
+  }
+
+  return $library['loaded'];
+}
+
+
+/**
+ * Implements hook_permission().
+ */
+function taobaoke_permission() {
+  return array(
+    'administer taobaoke' => array(
+      'title' => t('Administer Taobaoke'),
+      'description' => t('Administer Taobaoke settings'),
+    ),
+  );
+}
+
+
+/**
+ * Implements hook_theme().
+ */
+function taobaoke_theme($existing, $type, $theme, $path) {
+
+  // Include theme.inc file.
+  $path = drupal_get_path('module', 'taobaoke');
+
+  return array(
+    'taobaoke_items_grid' => array(
+      'variables' => array('taobaoke_items' => NULL),
+      'template' => 'theme/taobaoke_items_grid',
+    ),
+    /*
+    // @todo Implement item list.
+    'taobaoke_items_list' => array(
+      'variables' => array(),
+    ),
+    */
+    'taobaoke_block' => array(
+      'variables' => array('taobaoke_items' => NULL),
+      'template' => 'theme/taobaoke_block',
+    ),
+    'taobaoke_item' => array(
+      'variables' => array('taobaoke_item' => NULL),
+      'template' => 'theme/taobaoke_item',
+    ),
+  );
+
+}
+
+
+/**
+ * Implements hook_menu().
+ */
+function taobaoke_menu() {
+  $items = array();
+
+  // Taobaoke config page.
+  $items['admin/config/taobaoke'] = array(
+    'title' => 'Taobaoke Settings',
+    'description' => 'Taobaoke Settings',
+    'page callback' => 'taobaoke_settings_page',
+    'access callback' => 'user_access',
+    'access arguments' => array('Administer Taobaoke'),
+    'file' => 'taobaoke.admin.inc',
+  );
+
+  $items['admin/config/taobaoke/default'] = array(
+    'title' => 'Default',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => 0,
+  );
+
+  // Taobaoke block settings page.
+  $items['admin/config/taobaoke/block'] = array(
+    'title' => 'Block',
+    'page callback' => 'taobaoke_block_admin_page',
+    'access callback' => 'user_access',
+    'access arguments' => array('Administer Taobaoke'),
+    'file' => 'taobaoke.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 1,
+  );
+
+  // Taobaoke main page.
+  $items['shop'] = array(
+    // 'title' => 'Taobaoke',
+    // 'description' => 'Taobaoke',
+    'page callback' => 'taobaoke_items_page',
+    'access callback' => 'user_access',
+    'access arguments' => array('access content'),
+  );
+
+  // Taobaoke item page.
+  $items['shop/item/%taobaoke_item'] = array(
+    'page callback' => 'taobaoke_item_redirect_page',
+    'page arguments' => array(2),
+    'access callback' => 'user_access',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+
+  // Redirect to taobao shop page.
+  $items['shop/shop/%taobaoke_item/go'] = array(
+    'page callback' => 'taobaoke_shop_redirect_page',
+    'page arguments' => array(2),
+    'access callback' => 'user_access',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+
+/**
+ * Implements hook_block_info().
+ */
+function taobaoke_block_info() {
+
+  $blocks = array();
+
+  $block_count = variable_get('taobaoke_block_count', 1);
+
+  for ($delta = 0; $delta < $block_count; $delta++) {
+
+    $blocks[$delta] = array(
+      'info' => variable_get('taobaoke_block_title_' . $delta,
+        t('#!index', array('!index' => $delta + 1))) .
+        t('(Taobaoke)'),
+      'status' => 0,
+      'cache' => DRUPAL_CACHE_PER_ROLE,
+    );
+
+  }
+
+  return $blocks;
+
+}
+
+
+/**
+ * Implements hook_block_configure().
+ */
+function taobaoke_block_configure($delta = '') {
+
+  $serialize_settings = variable_get('taobaoke_block_' . $delta, NULL);
+
+  if (empty($serialize_settings)) {
+    $settings = taobaoke_settings_get();
+  }
+  else {
+    $settings = unserialize($serialize_settings);
+  }
+
+  module_load_include('inc', 'taobaoke', 'taobaoke.admin');
+  $form = _taobaoke_settings_form($settings);
+
+  // Unset form elements for global settings.
+  unset($form['api']);
+
+  unset($form['submit']);
+
+
+  return $form;
+}
+
+
+/**
+ * Implements hook_block_save().
+ */
+function taobaoke_block_save($delta = '', $edit = array()) {
+
+  $settings_index = taobaoke_settings_index();
+  $settings = array();
+
+  foreach ($edit as $key => $value) {
+    if (in_array($key, $settings_index)) {
+      $settings[$key] = $value;
+    }
+  }
+
+  // Save taobaoke block settings as a serialized variable.
+  $variable_name = 'taobaoke_block_' . $edit['delta'];
+  $variable_value = serialize($settings);
+  variable_set($variable_name, $variable_value);
+
+  // Save each taobaoke block title as a variable,
+  // easy to get them when need to show titles in block admin page.
+  variable_set('taobaoke_block_title_' . $edit['delta'], $edit['title']);
+
+}
+
+
+/**
+ * Implements hook_block_view().
+ */
+function taobaoke_block_view($delta = '') {
+
+  $block = array(
+    'subject' => 'Taobaoke Block #' . $delta,
+    'content' => taobaoke_block_display($delta),
+  );
+
+  return $block;
+
+}
+
+
+/**
+ * Load taobaoke item properties array.
+ */
+function taobaoke_item_load($num_iid) {
+  return taobaoke_item_detail_get($num_iid);
+}
+
+
+/**
+ * Get settings of taobaoke module.
+ */
+function taobaoke_settings_get($setting_index = NULL) {
+
+  // Initial $settings array.
+  $settings = array();
+
+  // Get Settings key index.
+  $settings_index = taobaoke_settings_index();
+
+  foreach ($settings_index as $index) {
+    $settings[$index] = variable_get('taobaoke_' . $index, '');
+  }
+  return isset($settings[$setting_index]) ? $settings[$setting_index] : $settings;
+
+}
+
+
+/**
+ * Display items.
+ */
+function taobaoke_items_page() {
+
+  $output = "";
+
+  // @todo Add list style for taobaoke items.
+  $styles = array("list", "grid");
+
+  // Get Taobaoke default settings.
+  $settings = taobaoke_settings_get();
+
+  // Override default Settings
+  // taobaoke_override_settings($settings);
+  if (isset($_GET['cid']) && is_numeric($_GET['cid'])) {
+    $settings['cid'] = $_GET['cid'];
+  }
+
+  $page = isset($_GET['page']) && is_numeric($_GET['page'])
+    ? max(0, min($_GET['page'], 98)) : 0;
+
+  // Values of page_no in Taoke API are starting from 1,
+  // and theme_pager start from 0,
+  // so should +1 here when using $_GET['page']
+  $settings['page_no'] = $page + 1;
+
+  $taobaoke_items = taobaoke_items_get($settings);
+
+  if (isset($taobaoke_items['error_response']) && $taobaoke_items['error_response'] == 1) {
+    $output .= $taobaoke_items['msg'];
+  }
+  else {
+    $count = count($taobaoke_items);
+    if ($count == 0) {
+      $output .= t('No goods');
+    }
+    else {
+      $output .= theme("taobaoke_items_grid", array('taobaoke_items' => $taobaoke_items));
+      $output .= taobaoke_pager();
+    }
+  }
+
+  return $output;
+}
+
+/**
+ * Pager of taobaoke items page.
+ */
+function taobaoke_pager() {
+
+  global $pager_page_array, $pager_total;
+  // Total page num.
+  $pager_total[0] = 98;
+
+  // Current page.
+  // Convert comma-separated $page to an array, used by other functions.
+  $page = isset($_GET['page']) && is_numeric($_GET['page'])
+    ? max(0, min($_GET['page'], 98)) : 0;
+  $pager_page_array[0] = $page;
+
+  $pager = theme('pager');
+
+  return $pager;
+}
+
+
+/**
+ * Redirect to taobaoke item page
+ */
+function taobaoke_item_redirect_page($taobaoke_item) {
+
+  $redirect = isset($taobaoke_item['click_url']) && !empty($taobaoke_item['click_url'])
+    ? $taobaoke_item['click_url']
+    : $taobaoke_item['detail_url'];
+
+  drupal_add_http_header("location", $redirect);
+}
+
+
+/**
+ * Redirect to taobaoke shop page
+ */
+function taobaoke_shop_redirect_page($taobaoke_item) {
+
+  $redirect = isset($taobaoke_item['shop_click_url']) && !empty($taobaoke_item['shop_click_url'])
+    ? $taobaoke_item['shop_click_url']
+    : $taobaoke_item['detail_url'];
+
+  drupal_set_header("location:" . $redirect);
+}
+
+
+/**
+ * Get content of a taobaoke block.
+ */
+function taobaoke_block_display($delta) {
+
+  $serialize_settings = variable_get('taobaoke_block_' . $delta, NULL);
+  if (!empty($serialize_settings)) {
+    $settings = unserialize($serialize_settings);
+  }
+  else {
+    $settings = taobaoke_settings_get();
+  }
+
+  $output = '';
+
+  $taobaoke_items = taobaoke_block_items_get($settings);
+
+  if (isset($taobaoke_items['error_response']) && $taobaoke_items['error_response'] == 1) {
+    $output .= $taobaoke_items['msg'];
+  }
+  else {
+    $count = count($taobaoke_items);
+    if ($count == 0) {
+      $output .= t('No goods');
+    }
+    else {
+      $output .= theme('taobaoke_block', array('taobaoke_items' => $taobaoke_items));
+    }
+  }
+
+  return $output;
+}
+
+
+/**
+ * Get items of a taobaoke block.
+ */
+function taobaoke_block_items_get($settings) {
+
+  $taobaoke_items = ($settings);
+
+  return $taobaoke_items;
+}
+
+/**
+ * Get taobaoke items.
+ */
+function taobaoke_items_get($settings) {
+
+  $taobaoke_items =_taobaoke_items_get($settings);
+
+  return $taobaoke_items;
+}
+
+
+/**
+ * Get taobaoke item detail.
+ */
+function taobaoke_item_detail_get($num_iid) {
+
+  if (!is_numeric($num_iid)) {
+    return;
+  }
+
+  $taobaoke_item = array();
+
+  // Get properties of an item.
+  $is_loaded = taobaoke_load_sdk();
+  if (!$is_loaded) {
+    return $taobaoke_item;
+  }
+  
+  $c = new TopClient();
+  $c->appkey = taobaoke_settings_get('app_key');
+  $c->secretKey = taobaoke_settings_get('app_secret');
+
+  $req = new TaobaokeItemsDetailGetRequest();
+  $req->setFields("click_url, shop_click_url, seller_credit_score,
+      num_iid, title, nick");
+  $req->setNumIids($num_iid);
+  $req->setNick(taobaoke_settings_get('nick'));
+  $resp = $c->execute($req);
+
+  // Convert SimpleXMLElement to xml.
+  $xml = @$resp->asXML();
+
+  $parser = xml_parser_create();
+  xml_parser_set_option($parser, XML_OPTION_CASE_FOLDING, 0);
+  xml_parser_set_option($parser, XML_OPTION_SKIP_WHITE, 1);
+  xml_parse_into_struct($parser, $xml, $values, $tags);
+  xml_parser_free($parser);
+
+  $taoke_item_attributes = array("click_url", "shop_click_url",
+    "seller_credit_score", "num_iid", "title", "nick",
+  );
+
+  foreach ($tags as $key => $tag) {
+    // If it's an item attribute, add the value to item array;
+    if (in_array($key, $taoke_item_attributes)) {
+      foreach ($tag as $index => $value_index) {
+        // $taobaoke_item[$key][$index] = $values[$value_index]['value'];
+        $taobaoke_item[$key] = $values[$value_index]['value'];
+      }
+    }
+  }
+
+  return $taobaoke_item;
+
+}
+
+/**
+ * Get taobaoke items.
+ */
+function _taobaoke_items_get($settings) {
+
+  $taobaoke_item = array();
+
+  // Load SDK.
+  $is_loaded = taobaoke_load_sdk();
+  if (!$is_loaded) {
+    return $taobaoke_item;
+  }
+
+  // Get data from TOP(Taobao Open Platform).
+  $c = new TopClient();
+
+  $c->appkey = variable_get('taobaoke_app_key', NULL);
+  $c->secretKey = variable_get('taobaoke_app_secret', NULL);
+
+  $req = new TaobaokeItemsGetRequest();
+  $req->setFields("num_iid, title,nick, pic_url, price, click_url, commission, commission_rate,
+    commission_num, commission_volume, shop_click_url, seller_credit_score, item_location, volume");
+  $req->setNick($settings['nick']);
+  if ($settings['keyword']) {
+    $req->setKeyword($settings['keyword']);
+  }
+  elseif ($settings['cid']) {
+    $req->setCid($settings['cid']);
+  }
+
+  // Must set in pair.
+  $req->setStartPrice($settings['start_price']);
+  $req->setEndPrice($settings['end_price']);
+
+  // Must set in pair.
+  $req->setStartCommissionRate($settings['start_commissionRate']);
+  $req->setEndCommissionRate($settings['end_commissionRate']);
+
+  $req->setSort($settings['sort']);
+
+  $req->setOverseasItem("ture");
+
+  $req->setPageNo($settings['page_no']);
+  $req->setPageSize($settings['page_size']);
+
+
+  $resp = $c->execute($req);
+
+  // Convert SimpleXMLElement to xml.
+  $xml = @$resp->asXML();
+
+  $parser = xml_parser_create();
+  xml_parser_set_option($parser, XML_OPTION_CASE_FOLDING, 0);
+  xml_parser_set_option($parser, XML_OPTION_SKIP_WHITE, 1);
+  xml_parse_into_struct($parser, $xml, $values, $tags);
+  xml_parser_free($parser);
+
+  // If responsed an error, return error message.
+  if (isset($tags['error_response'])) {
+    return taobaoke_error($tags, $values);
+  }
+
+  $taobaoke_items = array();
+
+  $item_attributes = array(
+    "num_iid", "title", "nick", "pic_url", "price", "click_url", "commission", "commission_rate",
+     "commission_num", "commission_volume", "shop_click_url", "seller_credit_score", "item_location",
+     "volume",
+  );
+
+
+  // Construct Taobaoke item array().
+  foreach ($tags as $key => $tag) {
+    // If it's an item attribute, add the value to item array.
+    if (in_array($key, $item_attributes)) {
+      foreach ($tag as $index => $value_index) {
+        $taobaoke_items[$index][$key] = $values[$value_index]['value'];
+      }
+    }
+  }
+
+  // Construct path of taobaoke items.
+  foreach ($taobaoke_items as $key => $item) {
+    $internal_path = 'shop/item/' . $item['num_iid'];
+    $taobaoke_items[$key]['url'] = url($internal_path, array('absolute' => TRUE));
+    $taobaoke_items[$key]['link'] = l($taobaoke_items[$key]['title'], $taobaoke_items[$key]['url'],
+      array('attributes' => array('target' => '_blank'), 'html' => TRUE));
+  }
+
+  return $taobaoke_items;
+}
+
+
+/**
+ * Get an array of taobaoke settings key.
+ */
+function taobaoke_settings_index() {
+
+  return array(
+
+    // API settings.
+    'app_key',
+    'app_secret',
+
+    // Default taobaoke.items.get settings.
+    'fields',
+    'nick',
+    'pid',
+    'keyword',
+    'cid',
+    'start_price',
+    'end_price',
+    'auto_send',
+    'area',
+    'start_credit',
+    'end_credit',
+    'sort',
+    'guarantee',
+    'start_commissionRate',
+    'end_commissionRate',
+    'start_commissionNum',
+    'end_commissionNum',
+    'start_totalnum',
+    'end_totalnum',
+    'cash_coupon',
+    'vip_card',
+    'overseas_item',
+    'sevendays_return',
+    'real_describe',
+    'onemonth_repair',
+    'cash_ondelivery',
+    'mall_item',
+    'page_no',
+    'page_size',
+    'outer_code',
+    'is_mobile',
+  );
+
+}
+
+
+/**
+ * Construct error message based on remote responsed result.
+ */
+function taobaoke_error($tags, $values) {
+
+  // Get message index.
+  if (isset($tags['msg'])) {
+    $msg_index = $tags['msg'][0];
+  }
+  elseif (isset($tags['sub_msg'])) {
+    $msg_index = $tags['sub_msg'][0];
+  }
+  elseif (isset($tags['code'])) {
+    $msg_index = $tags['code'][0];
+  }
+  elseif (isset($tags['sub_code'])) {
+    $msg_index = $tags['sub_code'][0];
+  }
+
+  // Construct and return an error array.
+  $error_msg = $values[$msg_index]['value'];
+
+  return array(
+    'error_response' => 1,
+    'msg' => $error_msg,
+  );
+
+}

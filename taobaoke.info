@@ -1,0 +1,9 @@
+name = "Taobaoke"
+description = "Taobaoke module Based on Taobao Open Platform(TOP), to help administrator build a Taoke website. To use this module, you MUST get a API key from http://open.taobao.com"
+core = 7.x
+
+package = "E-commerce"
+
+configure = admin/config/taobaoke
+
+dependencies[] = libraries

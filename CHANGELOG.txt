@@ -1,0 +1,14 @@
+Taobaoke 6.x-1.x, 2011-11-08
+------------------------------
+
+
+Taobaoke 6.x-1.x, 2011-08-11
+------------------------------
+by Lugir: Changed add link action from 'node_view' stage to 'node_load'.
+by Lugir: Fixed can't add links to images which in teaser mode or RSS.
+
+Taobaoke 6.x-1.x, 2011-05-23
+------------------------------
+by Lugir: Add TOP SDK(taobao-sdk-php-20110518.zip) into module package.
+
+

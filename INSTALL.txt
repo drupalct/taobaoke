@@ -1,0 +1,9 @@
+INSTALL
+
+1. Download taobaoke module
+2. Extract taobaoke module to sites/all/modules
+3. Download Taobao SDK from 
+http://open.taobao.com/dev/index.php/SDK%E4%B8%8B%E8%BD%BD
+4. Extract Taobao SDK to sites/all/libraries, 
+make sure sites/all/libraries/topsdk/TopSdk.php exists.
+5. Go to module administer page, enable taobaoke module.
